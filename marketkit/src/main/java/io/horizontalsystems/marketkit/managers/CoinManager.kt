@@ -6,6 +6,7 @@ import io.horizontalsystems.marketkit.providers.DefiYieldProvider
 import io.horizontalsystems.marketkit.providers.HsProvider
 import io.horizontalsystems.marketkit.storage.CoinStorage
 import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 
 class CoinManager(
     private val storage: CoinStorage,
@@ -244,4 +245,7 @@ class CoinManager(
                 )
             }
 
+    fun getCoinStream(coinUid: String): Flow<Coin?> {
+        return storage.getCoinStream(coinUid)
+    }
 }

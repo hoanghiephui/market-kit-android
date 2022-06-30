@@ -2,6 +2,7 @@ package io.horizontalsystems.marketkit.storage
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import io.horizontalsystems.marketkit.models.*
+import kotlinx.coroutines.flow.Flow
 
 class CoinStorage(marketDatabase: MarketDatabase) {
 
@@ -104,4 +105,6 @@ class CoinStorage(marketDatabase: MarketDatabase) {
         tokenEntities.forEach { coinDao.insert(it) }
     }
 
+    fun getCoinStream(uid: String): Flow<Coin?>
+     = coinDao.getCoinStream(uid)
 }

@@ -4,6 +4,7 @@ import androidx.room.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import io.horizontalsystems.marketkit.models.*
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CoinDao {
@@ -129,4 +130,6 @@ interface CoinDao {
 
     }
 
+    @Query("SELECT * FROM Coin WHERE uid = :uid LIMIT 1")
+    fun getCoinStream(uid: String): Flow<Coin?>
 }

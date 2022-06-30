@@ -14,6 +14,7 @@ import io.horizontalsystems.marketkit.syncers.ExchangeSyncer
 import io.horizontalsystems.marketkit.syncers.HsDataSyncer
 import io.reactivex.Observable
 import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
 
 class MarketKit(
@@ -279,6 +280,9 @@ class MarketKit(
     suspend fun nftEvents(collectionUid: String, eventType: NftEvent.EventType?, cursor: String? = null): PagedNftEvents =
         nftManager.eventsSingle(collectionUid, eventType, cursor)
 
+    fun getCoinStream(coinUid: String): Flow<Coin?> {
+        return coinManager.getCoinStream(coinUid)
+    }
 
     companion object {
         fun getInstance(
