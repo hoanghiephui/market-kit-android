@@ -9,13 +9,13 @@ sealed class TokenType : Parcelable {
     object Native : TokenType()
 
     @Parcelize
-    class Eip20(val address: String) : TokenType()
+    data class Eip20(val address: String) : TokenType()
 
     @Parcelize
-    class Bep2(val symbol: String) : TokenType()
+    data class Bep2(val symbol: String) : TokenType()
 
     @Parcelize
-    class Unsupported(val type: String, val reference: String?) : TokenType()
+    data class Unsupported(val type: String, val reference: String?) : TokenType()
 
     val id: String
         get() = when (this) {
@@ -69,26 +69,20 @@ sealed class TokenType : Parcelable {
         fun fromId(id: String): TokenType? {
             val chunks = id.split(":")
 
-            when (chunks.size) {
-                1 -> if (chunks[0] == "native") {
-                    return Native
+            return when (chunks[0]) {
+                "native" -> Native
+                "eip20" -> chunks.getOrNull(1)?.let {
+                    Eip20(it)
                 }
-
-                2 -> when (chunks[0]) {
-                    "eip20" -> Eip20(chunks[1])
-                    "bep2" -> Bep2(chunks[1])
-                    "unsupported" -> Unsupported(chunks[1], null)
-                    else -> {}
+                "bep2" -> chunks.getOrNull(1)?.let {
+                    Bep2(it)
                 }
-
-                3 -> if (chunks[0] == "unsupported") {
-                    return Unsupported(chunks[1], chunks[2])
+                "unsupported" -> chunks.getOrNull(1)?.let {
+                    Unsupported(it, chunks.getOrNull(2))
                 }
-
-                else -> {}
+                else -> null
             }
 
-            return null
         }
 
     }
