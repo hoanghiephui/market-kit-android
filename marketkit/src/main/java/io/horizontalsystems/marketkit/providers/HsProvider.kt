@@ -48,8 +48,9 @@ class HsProvider(baseUrl: String, apiKey: String) {
     fun coinCategoryMarketPointsSingle(
         categoryUid: String,
         timePeriod: HsTimePeriod,
+        currencyCode: String,
     ): Single<List<CoinCategoryMarketPoint>> {
-        return service.coinCategoryMarketPoints(categoryUid, timePeriod.value)
+        return service.coinCategoryMarketPoints(categoryUid, timePeriod.value, currencyCode)
     }
 
     fun getCoinPrices(coinUids: List<String>, currencyCode: String): Single<List<CoinPrice>> {
@@ -128,7 +129,7 @@ class HsProvider(baseUrl: String, apiKey: String) {
         return service.getMarketInfoGlobalTvl(
             currencyCode,
             timePeriod.value,
-            chain = if (chain.isNotBlank()) chain else null
+            blockchain = if (chain.isNotBlank()) chain else null
         ).map { responseList ->
             responseList.mapNotNull {
                 it.tvl?.let { tvl ->
@@ -173,8 +174,12 @@ class HsProvider(baseUrl: String, apiKey: String) {
         return service.getTopPlatforms(currencyCode)
     }
 
-    fun topPlatformMarketCapPointsSingle(chain: String): Single<List<TopPlatformMarketCapPoint>> {
-        return service.getTopPlatformMarketCapPoints(chain)
+    fun topPlatformMarketCapPointsSingle(chain: String, timePeriod: HsTimePeriod, currencyCode: String): Single<List<TopPlatformMarketCapPoint>> {
+        return service.getTopPlatformMarketCapPoints(chain, timePeriod.value, currencyCode)
+    }
+
+    fun topPlatformCoinListSingle(chain: String, currencyCode: String): Single<List<MarketInfoRaw>> {
+        return service.getTopPlatformCoinList(chain, currencyCode)
     }
 
     fun dexLiquiditySingle(coinUid: String, currencyCode: String, timePeriod: HsTimePeriod, sessionKey: String?): Single<DexLiquiditiesResponse> {
@@ -257,7 +262,8 @@ class HsProvider(baseUrl: String, apiKey: String) {
         @GET("categories/{categoryUid}/market_cap")
         fun coinCategoryMarketPoints(
             @Path("categoryUid") categoryUid: String,
-            @Query("interval") interval: String
+            @Query("interval") interval: String,
+            @Query("currency") currencyCode: String,
         ): Single<List<CoinCategoryMarketPoint>>
 
         @GET("coins")
@@ -340,7 +346,7 @@ class HsProvider(baseUrl: String, apiKey: String) {
         fun getMarketInfoGlobalTvl(
             @Query("currency") currencyCode: String,
             @Query("interval") interval: String,
-            @Query("chain") chain: String?
+            @Query("blockchain") blockchain: String?
         ): Single<List<MarketInfoTvlResponse>>
 
         @GET("addresses/holders")
@@ -377,8 +383,16 @@ class HsProvider(baseUrl: String, apiKey: String) {
 
         @GET("top-platforms/{chain}/chart")
         fun getTopPlatformMarketCapPoints(
-            @Path("chain") chain: String
+            @Path("chain") chain: String,
+            @Query("interval") timePeriod: String,
+            @Query("currency") currencyCode: String,
         ): Single<List<TopPlatformMarketCapPoint>>
+
+        @GET("top-platforms/{chain}/list")
+        fun getTopPlatformCoinList(
+            @Path("chain") chain: String,
+            @Query("currency") currencyCode: String,
+        ): Single<List<MarketInfoRaw>>
 
         @GET("markets/overview")
         fun getMarketOverview(

@@ -117,8 +117,8 @@ class MarketKit(
     fun coinCategoriesSingle(currencyCode: String): Single<List<CoinCategory>> =
         hsProvider.getCoinCategories(currencyCode)
 
-    fun coinCategoryMarketPointsSingle(categoryUid: String, interval: HsTimePeriod) =
-        hsProvider.coinCategoryMarketPointsSingle(categoryUid, interval)
+    fun coinCategoryMarketPointsSingle(categoryUid: String, interval: HsTimePeriod, currencyCode: String) =
+        hsProvider.coinCategoryMarketPointsSingle(categoryUid, interval, currencyCode)
 
     fun sync() {
         hsDataSyncer.sync()
@@ -256,8 +256,12 @@ class MarketKit(
         return coinManager.topPlatformsSingle(currencyCode)
     }
 
-    fun topPlatformsMarketCapPointsSingle(chain: String): Single<List<TopPlatformMarketCapPoint>> {
-        return coinManager.topPlatformsMarketCapPointsSingle(chain)
+    fun topPlatformMarketCapPointsSingle(chain: String, timePeriod: HsTimePeriod, currencyCode: String): Single<List<TopPlatformMarketCapPoint>> {
+        return coinManager.topPlatformMarketCapPointsSingle(chain, timePeriod, currencyCode)
+    }
+
+    fun topPlatformCoinListSingle(chain: String, currencyCode: String): Single<List<MarketInfo>> {
+        return coinManager.topPlatformCoinListSingle(chain, currencyCode)
     }
 
     // NFT
