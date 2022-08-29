@@ -257,4 +257,6 @@ class CoinManager(
     fun getCoinStream(coinUid: String): Flow<Coin?> {
         return storage.getCoinStream(coinUid)
     }
+
+    fun getFullCoinStream(uid: String) = storage.getFullCoinStream(uid)
 }

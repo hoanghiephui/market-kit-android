@@ -40,7 +40,8 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
     fun getTokens(queries: List<TokenQuery>): List<Token> {
         if (queries.isEmpty()) return listOf()
 
-        val queriesStr = queries.toSet().toList().map { filterByTokenQuery(it) }.joinToString(" OR ")
+        val queriesStr =
+            queries.toSet().toList().map { filterByTokenQuery(it) }.joinToString(" OR ")
         val sql = "SELECT * FROM TokenEntity WHERE $queriesStr"
 
         return coinDao.getTokens(SimpleSQLiteQuery(sql)).map { it.token }
@@ -106,7 +107,11 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
         `Coin`.`name` ASC 
     """
 
-    fun update(coins: List<Coin>, blockchainEntities: List<BlockchainEntity>, tokenEntities: List<TokenEntity>) {
+    fun update(
+        coins: List<Coin>,
+        blockchainEntities: List<BlockchainEntity>,
+        tokenEntities: List<TokenEntity>
+    ) {
         marketDatabase.runInTransaction {
             coinDao.deleteAllCoins()
             coinDao.deleteAllBlockchains()
@@ -117,6 +122,7 @@ class CoinStorage(val marketDatabase: MarketDatabase) {
         }
     }
 
-    fun getCoinStream(uid: String): Flow<Coin?>
-     = coinDao.getCoinStream(uid)
+    fun getCoinStream(uid: String): Flow<Coin?> = coinDao.getCoinStream(uid)
+
+    fun getFullCoinStream(uid: String) = coinDao.getFullCoinStream(uid)
 }

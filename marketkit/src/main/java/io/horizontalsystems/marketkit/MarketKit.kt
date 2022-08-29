@@ -46,6 +46,10 @@ class MarketKit(
         return coinManager.fullCoins(coinUids)
     }
 
+    fun fullCoin(coinUids: String): FullCoin? {
+        return coinManager.fullCoin(coinUids)
+    }
+
     fun token(query: TokenQuery): Token? =
         coinManager.token(query)
 
@@ -296,6 +300,8 @@ class MarketKit(
     fun getCoinStream(coinUid: String): Flow<Coin?> {
         return coinManager.getCoinStream(coinUid)
     }
+
+    fun getFullCoinStream(uid: String) = coinManager.getFullCoinStream(uid)
 
     companion object {
         fun getInstance(
