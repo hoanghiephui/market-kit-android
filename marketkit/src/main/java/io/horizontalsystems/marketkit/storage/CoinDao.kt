@@ -132,4 +132,7 @@ interface CoinDao {
 
     @Query("SELECT * FROM Coin WHERE uid = :uid LIMIT 1")
     fun getCoinStream(uid: String): Flow<Coin?>
+
+    @Query("SELECT * FROM Coin WHERE uid = :uid LIMIT 1")
+    fun getFullCoinStream(uid: String): Flow<FullCoinWrapper?>
 }
