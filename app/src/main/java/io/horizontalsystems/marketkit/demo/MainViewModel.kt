@@ -91,15 +91,12 @@ class MainViewModel(private val marketKit: MarketKit) : ViewModel() {
         val time = Date().time / 1000 - TimeUnit.DAYS.toSeconds(7)
 
         val interval = HsPeriodType.ByStartTime(time)
-        //get stored chart info
-        val storedChartInfo = marketKit.chartInfo(coinUid, currencyCode, interval)
-        Log.w("AAA", "storedChartInfo: ${storedChartInfo?.points}")
 
         //fetch chartInfo from API
-        marketKit.getChartInfoAsync(coinUid, currencyCode, interval)
+        marketKit.chartPointsSingle(coinUid, currencyCode, interval)
             .subscribeOn(Schedulers.io())
             .subscribe({
-                Log.w("AAA", "fetchChartInfo: ${it.points}")
+                Log.w("AAA", "fetchChartInfo: ${it}")
             }, {
                 Log.e("AAA", "fetchChartInfo Error", it)
             })
@@ -448,6 +445,85 @@ class MainViewModel(private val marketKit: MarketKit) : ViewModel() {
                 }
             }, {
                 Log.e("AAA", "runTopPlatformCoinList error", it)
+            }).let {
+                disposables.add(it)
+            }
+    }
+
+    fun runAnalyticsPreview() {
+        val chain = "ethereum"
+        marketKit.analyticsPreviewSingle(chain)
+            .subscribeOn(Schedulers.io())
+            .subscribe({ data ->
+                Log.e("AAA", "cexVolume rank30d: ${data.cexVolume?.rank30d} points: ${data.cexVolume?.points} dexVolume rank30d: ${data.dexVolume?.rank30d} points: ${data.dexVolume?.points} ")
+                Log.e("AAA", "fundsInvested: ${data.fundsInvested} holders: ${data.holders} ")
+            }, {
+                Log.e("AAA", "runAnalyticsPreview error", it)
+            }).let {
+                disposables.add(it)
+            }
+    }
+
+    fun runAnalytics() {
+        val chain = "ethereum"
+        val currencyCode = "usd"
+        marketKit.analyticsSingle(chain, currencyCode)
+            .subscribeOn(Schedulers.io())
+            .subscribe({ data ->
+                Log.e("AAA", "cexVolume rank30d: ${data.cexVolume?.rank30d} points.size: ${data.cexVolume?.points?.size} transactions volume30d: ${data.transactions?.volume30d} points.size: ${data.transactions?.points?.size} ")
+                Log.e("AAA", "fundsInvested: ${data.fundsInvested} holders.size: ${data.holders?.size} ")
+            }, {
+                Log.e("AAA", "runAnalyticsPreview error", it)
+            }).let {
+                disposables.add(it)
+            }
+    }
+
+    fun runTokenHolders() {
+        val coinUid = "uniswap"
+        val blockchainUid = "ethereum"
+        marketKit.tokenHoldersSingle(coinUid, blockchainUid)
+            .subscribeOn(Schedulers.io())
+            .subscribe({ data ->
+                Log.e("AAA", "runTokenHolders count: ${data.count} url: ${data.holdersUrl} holders.size: ${data.topHolders.size} ")
+                data.topHolders.forEach { holder ->
+                    Log.e("AAA", "Holder: address: ${holder.address} percentage: ${holder.percentage} ")
+                }
+            }, {
+                Log.e("AAA", "runAnalyticsPreview error", it)
+            }).let {
+                disposables.add(it)
+            }
+    }
+
+    fun runDexLiquidityRanks() {
+        val currencyCode = "usd"
+        marketKit.dexLiquidityRanksSingle(currencyCode)
+            .subscribeOn(Schedulers.io())
+            .subscribe({ data ->
+                data.forEach { item ->
+                    Log.e("AAA", "runDexLiquidityRanks value: ${item.value} uid: ${item.uid} ")
+                }
+            }, {
+                Log.e("AAA", "runDexLiquidityRanks error", it)
+            }).let {
+                disposables.add(it)
+            }
+    }
+
+    fun runRevenueRanks() {
+        val currencyCode = "usd"
+        marketKit.revenueRanksSingle(currencyCode)
+            .subscribeOn(Schedulers.io())
+            .subscribe({ data ->
+                data.forEach { item ->
+                    Log.e(
+                        "AAA",
+                        "runRevenueRanks value1d: ${item.value1d} value7d: ${item.value7d} uid: ${item.uid} "
+                    )
+                }
+            }, {
+                Log.e("AAA", "runRevenueRanks error", it)
             }).let {
                 disposables.add(it)
             }
