@@ -74,6 +74,10 @@ class MarketKit(
         return coinManager.marketInfosSingle(top, currencyCode, defi)
     }
 
+    fun marketInfoFlow(top: Int, currencyCode: String, defi: Boolean = false): Flow<List<MarketInfo>> {
+        return coinManager.marketInfoFlow(top, currencyCode, defi)
+    }
+
     fun advancedMarketInfosSingle(top: Int = 250, currencyCode: String): Single<List<MarketInfo>> {
         return coinManager.advancedMarketInfosSingle(top, currencyCode)
     }
@@ -321,10 +325,14 @@ class MarketKit(
     // Overview
     fun marketOverviewSingle(currencyCode: String): Single<MarketOverview> =
         marketOverviewManager.marketOverviewSingle(currencyCode)
+    fun marketOverviewFlow(currencyCode: String): Flow<MarketOverview> =
+        marketOverviewManager.marketOverviewFlow(currencyCode)
 
 
     fun topMoversSingle(currencyCode: String): Single<TopMovers> =
         coinManager.topMoversSingle(currencyCode)
+    fun topMoversFlow(currencyCode: String): Flow<TopMovers> =
+        coinManager.topMoversFlow(currencyCode)
 
     // Chart Info
 

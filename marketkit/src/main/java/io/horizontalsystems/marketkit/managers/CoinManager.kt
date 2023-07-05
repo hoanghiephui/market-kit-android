@@ -7,6 +7,7 @@ import io.horizontalsystems.marketkit.providers.HsProvider
 import io.horizontalsystems.marketkit.storage.CoinStorage
 import io.reactivex.Single
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class CoinManager(
     private val storage: CoinStorage,
@@ -27,6 +28,12 @@ class CoinManager(
 
     fun marketInfosSingle(top: Int, currencyCode: String, defi: Boolean): Single<List<MarketInfo>> {
         return hsProvider.marketInfosSingle(top, currencyCode, defi).map {
+            getMarketInfos(it)
+        }
+    }
+
+    fun marketInfoFlow(top: Int, currencyCode: String, defi: Boolean): Flow<List<MarketInfo>> {
+        return hsProvider.marketInfoFlow(top, currencyCode, defi).map {
             getMarketInfos(it)
         }
     }
@@ -125,7 +132,7 @@ class CoinManager(
                             MarketInfo(rawMarketInfo, fullCoin)
                         }
                     )
-                } catch (e: Exception) { }
+                } catch (_: Exception) { }
             }
         }
     }
@@ -142,6 +149,19 @@ class CoinManager(
 
     fun topMoversSingle(currencyCode: String): Single<TopMovers> =
         hsProvider.topMoversRawSingle(currencyCode)
+            .map { raw ->
+                TopMovers(
+                    gainers100 = getMarketInfos(raw.gainers100),
+                    gainers200 = getMarketInfos(raw.gainers200),
+                    gainers300 = getMarketInfos(raw.gainers300),
+                    losers100 = getMarketInfos(raw.losers100),
+                    losers200 = getMarketInfos(raw.losers200),
+                    losers300 = getMarketInfos(raw.losers300)
+                )
+            }
+
+    fun topMoversFlow(currencyCode: String): Flow<TopMovers> =
+        hsProvider.topMoversRawFlow(currencyCode)
             .map { raw ->
                 TopMovers(
                     gainers100 = getMarketInfos(raw.gainers100),

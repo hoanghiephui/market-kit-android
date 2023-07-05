@@ -3,6 +3,7 @@ package io.horizontalsystems.marketkit.providers
 import com.google.gson.annotations.SerializedName
 import io.horizontalsystems.marketkit.models.*
 import io.reactivex.Single
+import kotlinx.coroutines.flow.Flow
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -26,6 +27,14 @@ class HsProvider(baseUrl: String, apiKey: String) {
         defi: Boolean
     ): Single<List<MarketInfoRaw>> {
         return service.getMarketInfos(top, currencyCode, defi)
+    }
+
+    fun marketInfoFlow(
+        top: Int,
+        currencyCode: String,
+        defi: Boolean
+    ): Flow<List<MarketInfoRaw>> {
+        return service.getMarketInfo(top, currencyCode, defi)
     }
 
     fun advancedMarketInfosSingle(top: Int, currencyCode: String): Single<List<MarketInfoRaw>> {
@@ -226,8 +235,15 @@ class HsProvider(baseUrl: String, apiKey: String) {
         return service.getMarketOverview(currencyCode)
     }
 
+    fun marketOverviewFlow(currencyCode: String): Flow<MarketOverviewResponse> {
+        return service.getMarketOverviewFlow(currencyCode)
+    }
+
     fun topMoversRawSingle(currencyCode: String): Single<TopMoversRaw> {
         return service.getTopMovers(currencyCode)
+    }
+    fun topMoversRawFlow(currencyCode: String): Flow<TopMoversRaw> {
+        return service.getTopMoversFlow(currencyCode)
     }
 
     fun statusSingle(): Single<HsStatus> {
@@ -294,6 +310,15 @@ class HsProvider(baseUrl: String, apiKey: String) {
             @Query("order_by_rank") orderByRank: Boolean = true,
             @Query("fields") fields: String = marketInfoFields,
         ): Single<List<MarketInfoRaw>>
+
+        @GET("coins")
+        fun getMarketInfo(
+            @Query("limit") top: Int,
+            @Query("currency") currencyCode: String,
+            @Query("defi") defi: Boolean,
+            @Query("order_by_rank") orderByRank: Boolean = true,
+            @Query("fields") fields: String = marketInfoFields,
+        ): Flow<List<MarketInfoRaw>>
 
         @GET("coins")
         fun getAdvancedMarketInfos(
@@ -498,10 +523,21 @@ class HsProvider(baseUrl: String, apiKey: String) {
             @Query("simplified") simplified: Boolean = true
         ): Single<MarketOverviewResponse>
 
+        @GET("markets/overview")
+        fun getMarketOverviewFlow(
+            @Query("currency") currencyCode: String,
+            @Query("simplified") simplified: Boolean = true
+        ): Flow<MarketOverviewResponse>
+
         @GET("coins/top-movers")
         fun getTopMovers(
             @Query("currency") currencyCode: String
         ): Single<TopMoversRaw>
+
+        @GET("coins/top-movers")
+        fun getTopMoversFlow(
+            @Query("currency") currencyCode: String
+        ): Flow<TopMoversRaw>
 
         @GET("status/updates")
         fun getStatus(): Single<HsStatus>
