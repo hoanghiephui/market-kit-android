@@ -5,7 +5,10 @@ import io.horizontalsystems.marketkit.models.MarketOverview
 import io.horizontalsystems.marketkit.models.MarketOverviewResponse
 import io.horizontalsystems.marketkit.providers.HsProvider
 import io.reactivex.Single
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 class MarketOverviewManager(
@@ -29,6 +32,9 @@ class MarketOverviewManager(
         hsProvider.marketOverviewSingle(currencyCode).map { marketOverview(it) }
 
     fun marketOverviewFlow(currencyCode: String): Flow<MarketOverview> =
-        hsProvider.marketOverviewFlow(currencyCode).map { marketOverview(it) }
+        flow {
+            emitAll(hsProvider.marketOverviewFlow(currencyCode).map { marketOverview(it) })
+        }
+
 
 }

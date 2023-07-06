@@ -3,7 +3,10 @@ package io.horizontalsystems.marketkit.providers
 import com.google.gson.annotations.SerializedName
 import io.horizontalsystems.marketkit.models.*
 import io.reactivex.Single
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -14,7 +17,10 @@ import retrofit2.http.Query
 import java.math.BigDecimal
 import java.util.*
 
-class HsProvider(baseUrl: String, apiKey: String) {
+class HsProvider(
+    baseUrl: String, apiKey: String,
+    private val ioDispatcher: CoroutineDispatcher
+) {
 
     private val service by lazy {
         RetrofitUtils.build("${baseUrl}/v1/", mapOf("apikey" to apiKey))
@@ -29,11 +35,11 @@ class HsProvider(baseUrl: String, apiKey: String) {
         return service.getMarketInfos(top, currencyCode, defi)
     }
 
-    fun marketInfoFlow(
+    suspend fun marketInfoFlow(
         top: Int,
         currencyCode: String,
         defi: Boolean
-    ): Flow<List<MarketInfoRaw>> {
+    ): List<MarketInfoRaw> {
         return service.getMarketInfo(top, currencyCode, defi)
     }
 
@@ -188,11 +194,18 @@ class HsProvider(baseUrl: String, apiKey: String) {
         return service.getTopPlatforms(currencyCode)
     }
 
-    fun topPlatformMarketCapPointsSingle(chain: String, timePeriod: HsTimePeriod, currencyCode: String): Single<List<TopPlatformMarketCapPoint>> {
+    fun topPlatformMarketCapPointsSingle(
+        chain: String,
+        timePeriod: HsTimePeriod,
+        currencyCode: String
+    ): Single<List<TopPlatformMarketCapPoint>> {
         return service.getTopPlatformMarketCapPoints(chain, timePeriod.value, currencyCode)
     }
 
-    fun topPlatformCoinListSingle(chain: String, currencyCode: String): Single<List<MarketInfoRaw>> {
+    fun topPlatformCoinListSingle(
+        chain: String,
+        currencyCode: String
+    ): Single<List<MarketInfoRaw>> {
         return service.getTopPlatformCoinList(chain, currencyCode)
     }
 
@@ -235,16 +248,19 @@ class HsProvider(baseUrl: String, apiKey: String) {
         return service.getMarketOverview(currencyCode)
     }
 
-    fun marketOverviewFlow(currencyCode: String): Flow<MarketOverviewResponse> {
-        return service.getMarketOverviewFlow(currencyCode)
-    }
+    suspend fun marketOverviewFlow(currencyCode: String): Flow<MarketOverviewResponse> =
+        withContext(ioDispatcher) {
+            flowOf(service.getMarketOverviewFlow(currencyCode))
+        }
 
     fun topMoversRawSingle(currencyCode: String): Single<TopMoversRaw> {
         return service.getTopMovers(currencyCode)
     }
-    fun topMoversRawFlow(currencyCode: String): Flow<TopMoversRaw> {
-        return service.getTopMoversFlow(currencyCode)
-    }
+
+    suspend fun topMoversRawFlow(currencyCode: String): Flow<TopMoversRaw> =
+        withContext(ioDispatcher) {
+            flowOf(service.getTopMoversFlow(currencyCode))
+        }
 
     fun statusSingle(): Single<HsStatus> {
         return service.getStatus()
@@ -263,7 +279,10 @@ class HsProvider(baseUrl: String, apiKey: String) {
     }
 
     fun analyticsPreviewSingle(coinUid: String, addresses: List<String>): Single<AnalyticsPreview> {
-        return service.getAnalyticsPreview(coinUid, if (addresses.isEmpty()) null else addresses.joinToString(","))
+        return service.getAnalyticsPreview(
+            coinUid,
+            if (addresses.isEmpty()) null else addresses.joinToString(",")
+        )
     }
 
     fun analyticsSingle(
@@ -312,13 +331,13 @@ class HsProvider(baseUrl: String, apiKey: String) {
         ): Single<List<MarketInfoRaw>>
 
         @GET("coins")
-        fun getMarketInfo(
+        suspend fun getMarketInfo(
             @Query("limit") top: Int,
             @Query("currency") currencyCode: String,
             @Query("defi") defi: Boolean,
             @Query("order_by_rank") orderByRank: Boolean = true,
             @Query("fields") fields: String = marketInfoFields,
-        ): Flow<List<MarketInfoRaw>>
+        ): List<MarketInfoRaw>
 
         @GET("coins")
         fun getAdvancedMarketInfos(
@@ -524,10 +543,10 @@ class HsProvider(baseUrl: String, apiKey: String) {
         ): Single<MarketOverviewResponse>
 
         @GET("markets/overview")
-        fun getMarketOverviewFlow(
+        suspend fun getMarketOverviewFlow(
             @Query("currency") currencyCode: String,
             @Query("simplified") simplified: Boolean = true
-        ): Flow<MarketOverviewResponse>
+        ): MarketOverviewResponse
 
         @GET("coins/top-movers")
         fun getTopMovers(
@@ -535,9 +554,9 @@ class HsProvider(baseUrl: String, apiKey: String) {
         ): Single<TopMoversRaw>
 
         @GET("coins/top-movers")
-        fun getTopMoversFlow(
+        suspend fun getTopMoversFlow(
             @Query("currency") currencyCode: String
-        ): Flow<TopMoversRaw>
+        ): TopMoversRaw
 
         @GET("status/updates")
         fun getStatus(): Single<HsStatus>

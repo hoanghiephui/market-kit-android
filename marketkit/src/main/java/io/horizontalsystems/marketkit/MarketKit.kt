@@ -12,6 +12,7 @@ import io.horizontalsystems.marketkit.syncers.ExchangeSyncer
 import io.horizontalsystems.marketkit.syncers.HsDataSyncer
 import io.reactivex.Observable
 import io.reactivex.Single
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import java.math.BigDecimal
 import java.util.*
@@ -28,7 +29,8 @@ class MarketKit(
     private val exchangeSyncer: ExchangeSyncer,
     private val globalMarketInfoManager: GlobalMarketInfoManager,
     private val hsProvider: HsProvider,
-    private val hsDataSyncer: HsDataSyncer
+    private val hsDataSyncer: HsDataSyncer,
+    private val ioDispatcher: CoroutineDispatcher
 ) {
     // Coins
 
@@ -412,7 +414,8 @@ class MarketKit(
             hsApiBaseUrl: String,
             hsApiKey: String,
             cryptoCompareApiKey: String? = null,
-            defiYieldApiKey: String? = null
+            defiYieldApiKey: String? = null,
+            ioDispatcher: CoroutineDispatcher
         ): MarketKit {
             // init cache
             (context.getSystemService(Context.STORAGE_SERVICE) as StorageManager?)?.let { storageManager ->
@@ -424,7 +427,7 @@ class MarketKit(
             }
 
             val marketDatabase = MarketDatabase.getInstance(context)
-            val hsProvider = HsProvider(hsApiBaseUrl, hsApiKey)
+            val hsProvider = HsProvider(hsApiBaseUrl, hsApiKey, ioDispatcher)
             val hsNftProvider = HsNftProvider(hsApiBaseUrl, hsApiKey)
             val coinGeckoProvider = CoinGeckoProvider("https://api.coingecko.com/api/v3/")
             val defiYieldProvider = DefiYieldProvider(defiYieldApiKey)
@@ -461,7 +464,8 @@ class MarketKit(
                 exchangeSyncer,
                 globalMarketInfoManager,
                 hsProvider,
-                hsDataSyncer
+                hsDataSyncer,
+                ioDispatcher
             )
         }
     }

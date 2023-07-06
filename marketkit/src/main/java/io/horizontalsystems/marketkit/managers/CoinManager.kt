@@ -7,6 +7,8 @@ import io.horizontalsystems.marketkit.providers.HsProvider
 import io.horizontalsystems.marketkit.storage.CoinStorage
 import io.reactivex.Single
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 class CoinManager(
@@ -32,12 +34,12 @@ class CoinManager(
         }
     }
 
-    fun marketInfoFlow(top: Int, currencyCode: String, defi: Boolean): Flow<List<MarketInfo>> {
-        return hsProvider.marketInfoFlow(top, currencyCode, defi).map {
-            getMarketInfos(it)
-        }
+    fun marketInfoFlow(top: Int, currencyCode: String, defi: Boolean): Flow<List<MarketInfo>>
+    = flow {
+        val item = hsProvider.marketInfoFlow(top, currencyCode, defi)
+        val t = getMarketInfos(item)
+        emit(t)
     }
-
     fun allCoins(): List<Coin> = storage.allCoins()
 
     fun token(query: TokenQuery): Token? =
@@ -161,17 +163,23 @@ class CoinManager(
             }
 
     fun topMoversFlow(currencyCode: String): Flow<TopMovers> =
-        hsProvider.topMoversRawFlow(currencyCode)
-            .map { raw ->
-                TopMovers(
-                    gainers100 = getMarketInfos(raw.gainers100),
-                    gainers200 = getMarketInfos(raw.gainers200),
-                    gainers300 = getMarketInfos(raw.gainers300),
-                    losers100 = getMarketInfos(raw.losers100),
-                    losers200 = getMarketInfos(raw.losers200),
-                    losers300 = getMarketInfos(raw.losers300)
-                )
-            }
+        flow {
+            emitAll(
+                hsProvider.topMoversRawFlow(currencyCode)
+                    .map { raw ->
+                        TopMovers(
+                            gainers100 = getMarketInfos(raw.gainers100),
+                            gainers200 = getMarketInfos(raw.gainers200),
+                            gainers300 = getMarketInfos(raw.gainers300),
+                            losers100 = getMarketInfos(raw.losers100),
+                            losers200 = getMarketInfos(raw.losers200),
+                            losers300 = getMarketInfos(raw.losers300)
+                        )
+                    }
+            )
+
+        }
+
 
     fun getCoinStream(coinUid: String): Flow<Coin?> {
         return storage.getCoinStream(coinUid)
