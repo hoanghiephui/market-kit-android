@@ -6,6 +6,7 @@ import io.reactivex.Single
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -96,9 +97,33 @@ class HsProvider(
         return service.getCoinPriceChart(coinUid, currencyCode, fromTimestamp, periodType.value)
     }
 
+    suspend fun coinPriceChart(
+        coinUid: String,
+        currencyCode: String,
+        periodType: HsPointTimePeriod,
+        fromTimestamp: Long?
+    ): Flow<List<ChartCoinPriceResponse>> =
+        withContext(ioDispatcher) {
+            flowOf(
+                service.getCoinPriceChartFlow(
+                    coinUid,
+                    currencyCode,
+                    fromTimestamp,
+                    periodType.value
+                )
+            )
+        }
+
     fun coinPriceChartStartTime(coinUid: String): Single<Long> {
         return service.getCoinPriceChartStart(coinUid).map { it.timestamp }
     }
+
+    suspend fun coinPriceChartStartTimeFlow(coinUid: String): Flow<Long> =
+        withContext(ioDispatcher) {
+            flowOf(
+                service.getCoinPriceChartStartFlow(coinUid)
+            ).map { it.timestamp }
+        }
 
     fun getMarketInfoOverview(
         coinUid: String,
@@ -394,10 +419,23 @@ class HsProvider(
             @Query("interval") interval: String,
         ): Single<List<ChartCoinPriceResponse>>
 
+        @GET("coins/{coinUid}/price_chart")
+        suspend fun getCoinPriceChartFlow(
+            @Path("coinUid") coinUid: String,
+            @Query("currency") currencyCode: String,
+            @Query("from_timestamp") timestamp: Long?,
+            @Query("interval") interval: String,
+        ): List<ChartCoinPriceResponse>
+
         @GET("coins/{coinUid}/price_chart_start")
         fun getCoinPriceChartStart(
             @Path("coinUid") coinUid: String
         ): Single<PriceChartStart>
+
+        @GET("coins/{coinUid}/price_chart_start")
+        suspend fun getCoinPriceChartStartFlow(
+            @Path("coinUid") coinUid: String
+        ): PriceChartStart
 
         @GET("coins/{coinUid}")
         fun getMarketInfoOverview(
